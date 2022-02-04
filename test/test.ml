@@ -1,65 +1,39 @@
-open! Core
-open! Incr_dom_testing
-module App = Incr_decr_example_lib.App
+open QCheck
+open Ltl
 
-let make_helpers alist =
-  let driver =
-    Driver.create
-      ~initial_model:(App.initial_model_exn alist)
-      ~sexp_of_model:App.Model.sexp_of_t
-      ~initial_state:()
-      (module App)
-  in
-  Helpers.make driver
-;;
+let gen_un_op =
+  Gen.(
+    oneofl [Formula.Not; Formula.Next; Formula.Always; Formula.Eventually])
 
-let%expect_test "empty counters model" =
-  let (module H) = make_helpers [] in
-  H.show_view ();
-  [%expect
-    {|
-    <body>
-      <div>
-        <button onclick> add new counter </button>
-      </div>
-      <hr> </hr>
-    </body> |}]
-;;
+let gen_bin_op =
+  Gen.(oneofl [Formula.And; Formula.Or; Formula.Implies; Formula.Until])
 
-let%expect_test "singleton initial model" =
-  let (module H) = make_helpers [ 0, 13 ] in
-  H.show_view ();
-  [%expect
-    {|
-    <body>
-      <div>
-        <button onclick> add new counter </button>
-      </div>
-      <hr> </hr>
-      <div>
-        <button onclick> - </button>
-        13
-        <button onclick> + </button>
-      </div>
-    </body> |}]
-;;
+let gen_formula =
+  Gen.(
+    sized
+    @@ fix (fun self n ->
+           match n with
+           | 0 ->
+               oneof
+                 [ pure Formula.top
+                 ; pure Formula.bottom
+                 ; Formula.atomic <$> Gen.char_range 'A' 'Z' ]
+           | _ ->
+               oneof
+                 [ pure Formula.top
+                 ; pure Formula.bottom
+                 ; Formula.atomic <$> Gen.char_range 'A' 'Z'
+                 ; Formula.un_op <$> gen_un_op <*> self (n / 2)
+                 ; Formula.bin_op <$> gen_bin_op
+                   <*> self (n / 2)
+                   <*> self (n / 2) ] ))
 
-let%expect_test "add some counters" =
-  let (module H) = make_helpers [] in
-  H.show_model ();
-  [%expect {| ((counters ())) |}];
-  H.do_actions [ App.Action.New_counter; App.Action.New_counter ];
-  H.perform_update ();
-  H.show_model ();
-  [%expect {| ((counters ((0 0) (1 0)))) |}]
-;;
+let test =
+  QCheck.Test.make ~count:100 ~name:"parser and printer roundtrip"
+    (QCheck.make ~print:Formula.show_formula gen_formula) (fun f ->
+      Ltl.Parser.parse_exn (Ltl.Printer.print f) = f
+      (* Ltl.Printer.print f = "" *)
 
-let%expect_test "increment a counter" =
-  let (module H) = make_helpers [ 0, 0 ] in
-  H.show_model ();
-  [%expect {| ((counters ((0 0)))) |}];
-  H.do_actions [ App.Action.Update { pos = 0; diff = 5 } ];
-  H.perform_update ();
-  H.show_model ();
-  [%expect {| ((counters ((0 5)))) |}]
-;;
+      )
+
+(* let () = QCheck_runner.run_tests_main [test] *)

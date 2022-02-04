@@ -1,2 +1,0 @@
-(library (name incr_decr_example_lib) (libraries virtual_dom incr_dom)
- (preprocess (pps ppx_jane)))
