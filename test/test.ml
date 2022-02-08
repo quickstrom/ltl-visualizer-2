@@ -35,4 +35,4 @@ let test =
     (QCheck.make ~print:Formula.show_formula gen_formula) (fun f ->
       parse (Ltl.Printer.print f) = f )
 
-(* let () = QCheck_runner.run_tests_main [test] *)
+let () = QCheck_runner.run_tests_main [test]
