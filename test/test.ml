@@ -28,12 +28,11 @@ let gen_formula =
                    <*> self (n / 2)
                    <*> self (n / 2) ] ))
 
+let parse str = Ltl.Parser.f Ltl.Lexer.f (Lexing.from_string str)
+
 let test =
   QCheck.Test.make ~count:100 ~name:"parser and printer roundtrip"
     (QCheck.make ~print:Formula.show_formula gen_formula) (fun f ->
-      Ltl.Parser.parse_exn (Ltl.Printer.print f) = f
-      (* Ltl.Printer.print f = "" *)
-
-      )
+      parse (Ltl.Printer.print f) = f )
 
 (* let () = QCheck_runner.run_tests_main [test] *)

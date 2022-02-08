@@ -11,6 +11,7 @@ pkgs.mkShell {
     merlin
     utop
     ocaml-lsp
+    menhir
     # library deps
     core
     ppx_jane
