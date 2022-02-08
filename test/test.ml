@@ -30,9 +30,9 @@ let gen_formula =
 
 let parse str = Ltl.Parser.f Ltl.Lexer.f (Lexing.from_string str)
 
-let test =
+let test_rountrip =
   QCheck.Test.make ~count:100 ~name:"parser and printer roundtrip"
     (QCheck.make ~print:Formula.show_formula gen_formula) (fun f ->
       parse (Ltl.Printer.print f) = f )
 
-let () = QCheck_runner.run_tests_main [test]
+let () = QCheck_runner.run_tests_main [test_rountrip]
