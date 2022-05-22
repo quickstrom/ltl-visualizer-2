@@ -4,6 +4,6 @@
   
 (library
   (name ltl)
-  (libraries core angstrom ppx_deriving)
+  (libraries core_kernel angstrom ppx_deriving)
   (preprocess (pps ppx_jane ppx_deriving.std))
   )

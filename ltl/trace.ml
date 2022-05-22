@@ -15,9 +15,12 @@ let state_to_string : State.t -> string =
   State.iter (fun c -> str := !str ^ String.make 1 c) s ;
   !str
 
+type trace = State.t list
+
 let print_trace trace =
-  let print_state state = String.of_seq state in
-  "[" ^ StdLabels.String.concat ~sep:", " (List.map print_state trace) ^ "]"
+  "["
+  ^ StdLabels.String.concat ~sep:", " (List.map state_to_string trace)
+  ^ "]"
 
 (* let setTraceState: (bool, char, int, trace) => trace = (enabled, name, i,
    trace) => { let modifyState = s => if enabled { Belt.Set.add(s, name) }

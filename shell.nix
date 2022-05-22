@@ -13,7 +13,7 @@ pkgs.mkShell {
     ocaml-lsp
     menhir
     # library deps
-    core
+    core_kernel
     ppx_jane
     ppx_deriving
     js_of_ocaml

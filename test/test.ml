@@ -35,4 +35,12 @@ let test_rountrip =
     (QCheck.make ~print:Formula.show_formula gen_formula) (fun f ->
       parse (Printer.print_formula f) = f )
 
-let () = QCheck_runner.run_tests_main [test_rountrip]
+let equiv f1 f2 t = Ltl.Eval.EvalTrace.eval_all f1 t =
+    Ltl.Eval.EvalTrace.eval_all f2 t
+
+let test_eval_e_u_equiv =
+  QCheck.Test.make ~count:100 ~name:"eventually/until equivalence"
+    (QCheck.make ~print:Formula.show_formula gen_formula) (fun f ->
+      Formula.Syntax.(equiv (eventually f) (until Ltl.Formula.Top f) []))
+
+let () = QCheck_runner.run_tests_main [test_rountrip; test_eval_e_u_equiv]

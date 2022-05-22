@@ -1,4 +1,4 @@
 (executable
  (name test)
- (libraries core qcheck ltl)
+ (libraries core_kernel qcheck ltl)
  (preprocess (pps ppx_jane)))

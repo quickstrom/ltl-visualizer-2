@@ -1,22 +1,18 @@
 open! Core_kernel
+open Ltl
 
 module Model : sig
-  type t [@@deriving sexp]
+  type t
+         (* [@@deriving sexp] *)
 
   include Incr_dom.App_intf.Model with type t := t
 end
 
 module Action : sig
-  type t =
-    | New_counter
-    | Update of
-        { pos : int
-        ; diff : int
-        }
-  [@@deriving sexp_of]
+  type t [@@deriving sexp]
 end
 
-val initial_model_exn : (int * int) list -> Model.t
+val initial_model_exn : Formula.formula list -> Model.t
 
 include
   Incr_dom.App_intf.S
