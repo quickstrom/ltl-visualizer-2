@@ -6,7 +6,7 @@ exception SyntaxError of string
 
 let atomic = ['A'-'Z']
 let ident = ['a'-'z' '&' '|' '-' '>' '<']+
-let whitespace = [' ' '\t']
+let whitespace = [' ' '\t' '\n']
 
 rule f = parse
   | whitespace+ { f lexbuf }

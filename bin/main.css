@@ -1,0 +1,36 @@
+html {
+    font-family: sans-serif;
+    box-sizing: border-box;
+}
+table {
+    width: 100%;
+}
+th {
+    text-align: left;
+}
+td {
+    padding: 1rem;
+}
+.formula {
+    font-family: monospace;
+}
+.literal {
+    color: purple;
+}
+.operator.binary {
+    font-weight: bold;
+}
+.delimiter {
+    color: #666;
+}
+
+
+.parens {
+    display: inline-block;
+    padding: 0 0 0 1rem;
+}
+.parens:before {
+    content: "";
+    display: inline-block;
+    margin-left: -1rem;
+}
