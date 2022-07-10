@@ -1,7 +1,6 @@
 {
 open Parser
-
-exception SyntaxError of string
+open Error
 }
 
 let atomic = ['A'-'Z']

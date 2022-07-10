@@ -9,11 +9,27 @@ th {
     text-align: left;
 }
 td {
-    padding: 1rem;
+    padding: .5rem;
 }
+
+.missing {
+    font-style: italic;
+}
+
+.add-new {
+    display: flex;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ccc;
+}
+.pending-formula {
+    flex: 1;
+}
+
 .formula {
     font-family: monospace;
 }
+
 .literal {
     color: purple;
 }

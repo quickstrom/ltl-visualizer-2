@@ -1,5 +1,5 @@
 %{
-exception ParseError of string
+open Error
 %}
 
 %token <char> ATOMIC
@@ -21,13 +21,14 @@ expr :
   | a = ATOMIC { Formula.Atomic a }
   | TOP { Formula.Top }
   | BOTTOM { Formula.Bottom }
+  | i = IDENT; {raise (SyntaxError ("Invalid operator application: " ^ i))}
   | i = IDENT; e = expr; {
         let op = match i with
           | "not" -> Formula.Not
           | "next" -> Formula.Next
           | "always" -> Formula.Always
           | "eventually" -> Formula.Eventually
-          | _ -> raise (ParseError ("Invalid unary operator: " ^ i))
+          | _ -> raise (SyntaxError ("Invalid unary operator: " ^ i))
         in Formula.Un_op (op, e)
       }
   | e1 = expr; i = IDENT; e2 = expr; {
@@ -36,6 +37,6 @@ expr :
           | "||" -> Formula.Or
           | "->" -> Formula.Implies
           | "until" -> Formula.Until
-          | _ -> raise (ParseError ("Invalid binary operator: " ^ i))
+          | _ -> raise (SyntaxError ("Invalid binary operator: " ^ i))
         in Formula.Bin_op (op, e1, e2)
       }

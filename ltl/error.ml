@@ -1,0 +1,1 @@
+exception SyntaxError of string
