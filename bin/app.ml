@@ -11,11 +11,14 @@ let parse str =
       let pos = buf.lex_start_p in
       raise
         (PositionedParseError
-           {line= pos.pos_lnum; column= pos.pos_cnum; message= "Invalid syntax"} )
+           { line= pos.pos_lnum
+           ; column= pos.pos_cnum
+           ; message= "Invalid syntax" } )
   | Ltl.Error.SyntaxError msg ->
       let pos = buf.lex_start_p in
       raise
-        (PositionedParseError {line= pos.pos_lnum; column= pos.pos_cnum; message= msg})
+        (PositionedParseError
+           {line= pos.pos_lnum; column= pos.pos_cnum; message= msg} )
 
 (** The [Model] represents the full state of the application. The module has
     methods for updating the model as well, which will be used when applying
@@ -142,10 +145,12 @@ let rec print_formula_html ?(param = false) f =
 let view (m : Model.t) ~(inject : Action.t -> Vdom.Event.t) =
   let open Vdom in
   let add_new_formula_button =
-    let on_add_new_click =
-      Attr.on_click (fun _ev -> inject Action.Add_formula)
-    in
-    Node.div [] [Node.button [on_add_new_click] [Node.text "Add formula"]]
+    Node.div []
+      [Node.input [Attr.type_ "submit"; Attr.value "Add formula"] []]
+  in
+  let on_submit_formula =
+    Attr.on "submit" (fun _ev ->
+        Event.Many [Event.Prevent_default; inject Action.Add_formula] )
   in
   let pending_formula_input =
     Node.input
@@ -156,11 +161,12 @@ let view (m : Model.t) ~(inject : Action.t -> Vdom.Event.t) =
       []
   in
   let messages =
-    Node.div []
+    Node.div [Attr.class_ "error"]
       (match m.formula_error with Some msg -> [Node.text msg] | None -> [])
   in
   let add_new_form =
-    Node.div [Attr.class_ "add-new"]
+    Node.create "form"
+      [Attr.class_ "add-new"; on_submit_formula]
       [pending_formula_input; add_new_formula_button; messages]
   in
   let remove_formula_button txt ~index =
