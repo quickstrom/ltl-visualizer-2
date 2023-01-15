@@ -4,6 +4,7 @@ pkgs.mkShell {
   OCAMLRUNPARAM = "b";
   buildInputs = with pkgs.ocamlPackages; [
     pkgs.fswatch
+    pkgs.ghp-import
     pkgs.ocaml
     pkgs.ocamlformat
     pkgs.opam
