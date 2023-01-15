@@ -10,4 +10,6 @@ val state_to_string: State.t -> string
 
 type trace = State.t list
 
+val equal_trace: trace -> trace -> bool
+
 val print_trace: trace -> string

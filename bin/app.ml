@@ -27,7 +27,8 @@ module Model = struct
   type t =
     { formula_error: string option
     ; pending: string
-    ; formulas: Ltl.Formula.formula list }
+    ; formulas: Ltl.Formula.formula list
+    ; trace: Ltl.Trace.trace }
   [@@deriving fields, equal]
 
   let cutoff t1 t2 = equal t1 t2
@@ -40,6 +41,9 @@ module Model = struct
 
   let add_new_formula formula t =
     {t with formulas= List.append t.formulas [formula]}
+
+  let add_state t =
+    {t with trace= List.append t.trace [Ltl.Trace.State.empty]}
 
   let remove_formula i t =
     { t with
@@ -87,7 +91,7 @@ let apply_action model action _ ~schedule_action:_ =
   | Action.Remove_formula {index} ->
       model |> Model.remove_formula index |> Model.clear_error
   (* TODO: implement *)
-  | Action.Add_state -> model
+  | Action.Add_state -> model |> Model.add_state
   | Action.Toggle_state_atomic _ -> model
 
 let on_startup ~schedule_action:_ _ = Async_kernel.return ()
@@ -149,6 +153,14 @@ let rec print_formula_html ?(param = false) f =
            ; Node.text " "
            ; print_formula_html f2 ~param:true ] )
 
+let table_trace_headers (trace : Ltl.Trace.trace) =
+  let last = List.length trace - 1 in
+  List.mapi trace ~f:(fun i _ ->
+      Node.th
+        [ Node.text "S"
+        ; Node.span ~attr:(Attr.class_ "subscript")
+            [Node.text (Int.to_string i ^ if i = last then "..∞" else "")] ] )
+
 let view (m : Model.t) ~inject =
   let open Vdom in
   let add_new_formula_button =
@@ -187,7 +199,15 @@ let view (m : Model.t) ~inject =
   in
   let atomics =
     Node.table
-      ( Node.tr [Node.th [Node.text "Atom"]; Node.th []]
+      ( Node.tr
+          ( Node.th [Node.text "Atom"]
+          :: List.append
+               (table_trace_headers m.trace)
+               [ Node.th
+                   [ Node.button
+                       ~attr:
+                         (Attr.on_click (fun _ -> inject Action.Add_state))
+                       [Node.text "+"] ] ] )
       ::
       ( match all_atomic_names m with
       | [] ->
@@ -238,4 +258,9 @@ let create model ~old_model:_ ~inject =
   Component.create ~apply_action model view
 
 let initial_model_exn formulas =
-  {formula_error= None; pending= ""; Model.formulas}
+  { formula_error= None
+  ; pending= ""
+  ; Model.formulas
+  ; trace=
+      [Ltl.Trace.State.empty; Ltl.Trace.State.empty; Ltl.Trace.State.empty]
+  }

@@ -1,6 +1,6 @@
 module State = struct
   include Set.Make (Char)
-end
+end [@@deriving equal]
 
 let state_of states = State.of_list states
 
@@ -17,6 +17,8 @@ let state_to_string : State.t -> string =
 
 type trace = State.t list
 
+let equal_trace _ _ = false
+    
 let print_trace trace =
   "["
   ^ StdLabels.String.concat ~sep:", " (List.map state_to_string trace)
