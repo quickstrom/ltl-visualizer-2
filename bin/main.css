@@ -1,27 +1,46 @@
 html {
     font-family: sans-serif;
+    font-size: 16px;
     box-sizing: border-box;
+}
+html, body {
+    font-size: 16px;
 }
 table {
     width: 100%;
 }
-th {
+th, td {
     text-align: left;
+}
+th {
+    padding: .75rem .5rem .25rem;
+    border-bottom: 1px solid #ccc;
 }
 td {
     padding: .5rem;
 }
-
+td.literal,
+td.formula {
+    width: 90%;
+    font-size: 1rem;
+}
 .state {
     width: 1%;
+    white-space: nowrap;
+    font-family: monospace;
 }
+.actions {
+    text-align: right;
+}
+
 .missing {
     font-style: italic;
 }
 
 .add-new {
     display: flex;
-    margin-top: 1rem;
+    gap: .5rem;
+    margin-top: 2rem;
     padding-top: 1rem;
     border-top: 1px solid #ccc;
     flex-wrap: wrap;
@@ -30,6 +49,10 @@ td {
     flex: 1 0 100%;
     padding: .5rem 0;
     color: red;
+}
+.add-new input {
+    padding: .5rem;
+    font-size: 1rem;
 }
 .pending-formula {
     flex: 1;
@@ -79,5 +102,5 @@ td {
 }
 
 .state input[type=checkbox]:checked+label {
-        background: #000;
+    background: #000;
 }

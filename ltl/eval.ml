@@ -36,12 +36,12 @@ let eval_or p q =
   | Residual r1, Pure false -> Residual r1
   | Residual r1, Residual r2 -> Residual (Disjunction (r1, r2))
 
-let rec eval f state =
+let rec eval f (state: Trace.State.t) =
   Formula.Syntax.(
     match f with
     | Formula.Top -> Pure true
     | Formula.Bottom -> Pure true
-    | Formula.Atomic c -> Pure (Set.mem state c)
+    | Formula.Atomic c -> Pure (Trace.State.mem c state)
     | Formula.Un_op (op, p) -> (
       match op with
       | Formula.Not -> negate_value (eval p state)
@@ -99,12 +99,12 @@ module EvalTrace = struct
       | Pure r -> r
       | Residual r -> step_states (step r current) rest )
 
-  let eval_trace f trace =
-    match trace with
+  let eval_trace f (t: Trace.trace) =
+    match t with
     | [] -> raise EmptyTrace
     | [last] -> loop_last (eval f last)
     | first :: rest -> step_states (eval f first) rest
 
-  let rec eval_all f t =
+  let rec eval_all f (t : Trace.trace) =
     match t with [] -> [] | _ :: rest -> eval_trace f t :: eval_all f rest
 end

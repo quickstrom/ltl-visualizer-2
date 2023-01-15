@@ -167,24 +167,26 @@ let rec print_formula_html ?(param = false) f =
 let table_trace_headers (trace : Ltl.Trace.trace) =
   let last = List.length trace - 1 in
   List.mapi trace ~f:(fun i _ ->
-      Node.th ~attr:(Attr.class_ "state")
+      Node.th
         [ Node.text "S"
         ; Node.span ~attr:(Attr.class_ "subscript")
             [Node.text (Int.to_string i ^ if i = last then "..∞" else "")] ] )
 
-let table_trace_toggles ?(on_toggle = fun (_i : int) -> Effect.Ignore)
-    ~(id_prefix : string) (states : bool list) =
-  List.mapi states ~f:(fun i enabled ->
+let table_trace_toggles ?(disabled = false)
+    ?(on_toggle = fun (_i : int) -> Effect.Ignore) ~(id_prefix : string)
+    (states : bool list) =
+  List.mapi states ~f:(fun i checked ->
       let id = id_prefix ^ Int.to_string i in
-      Node.th ~attr:(Attr.class_ "state")
+      Node.td ~attr:(Attr.class_ "state")
         [ Node.input
             ~attr:
               (Attr.many
-                 (List.append
-                    [ Attr.type_ "checkbox"
-                    ; Attr.id id
-                    ; Attr.on_change (fun _ _ -> on_toggle i) ]
-                    (if enabled then [Attr.checked] else []) ) )
+                 (List.concat
+                    [ [ Attr.type_ "checkbox"
+                      ; Attr.id id
+                      ; Attr.on_change (fun _ _ -> on_toggle i) ]
+                    ; (if checked then [Attr.checked] else [])
+                    ; (if disabled then [Attr.disabled] else []) ] ) )
             []
         ; Node.label ~attr:(Attr.for_ id) [] ] )
 
@@ -206,6 +208,7 @@ let view (m : Model.t) ~inject =
       ~attr:
         (Attr.many
            [ Attr.class_ "pending-formula"
+           ; Attr.class_ "formula"
            ; Attr.value (Model.pending m)
            ; Attr.on_input (fun _ formula ->
                  inject (Action.Set_pending {formula}) ) ] )
@@ -230,7 +233,7 @@ let view (m : Model.t) ~inject =
         ( Node.th [Node.text "Atom"]
         :: List.append
              (table_trace_headers m.trace)
-             [ Node.th
+             [ Node.th ~attr:(Attr.class_ "actions")
                  [ Node.button
                      ~attr:(Attr.on_click (fun _ -> inject Action.Add_state))
                      [Node.text "+"] ] ] )
@@ -254,7 +257,7 @@ let view (m : Model.t) ~inject =
                           )
                         ~id_prefix:(String.of_char atom)
                         (List.map m.trace ~f:(Ltl.Trace.State.mem atom)) )
-                     [] ) ) )
+                     [Node.td []] ) ) )
     in
     let formulas_rows =
       Node.tr
@@ -271,14 +274,18 @@ let view (m : Model.t) ~inject =
       | _ ->
           List.mapi m.formulas ~f:(fun index formula ->
               Node.tr
-                [ Node.td ~attr:(Attr.class_ "formula")
+                ( Node.td ~attr:(Attr.class_ "formula")
                     [Node.code [print_formula_html formula]]
-                ; Node.td [remove_formula_button "Remove" ~index] ] ) )
+                :: List.append
+                     (table_trace_toggles ~disabled:true ~id_prefix:""
+                        (Ltl.Eval.EvalTrace.eval_all formula m.trace) )
+                     [ Node.td ~attr:(Attr.class_ "actions")
+                         [remove_formula_button "Remove" ~index] ] ) ) )
     in
     Node.table (List.append atomics_rows formulas_rows)
   in
   Node.body
-    [ Node.h1 [Node.text "Linear Temporal Logic Visualizer"]
+    [ Node.h1 [Node.text "Linear Temporal Logic Visualizer (v2)"]
     ; atomics_and_formulas
     ; add_new_form ]
 
