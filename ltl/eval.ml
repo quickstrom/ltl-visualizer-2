@@ -1,6 +1,6 @@
 exception EmptyTrace
 
-open Core_kernel
+open Core
 
 type strength = True | False
 

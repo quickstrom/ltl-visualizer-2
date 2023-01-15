@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open Incr_dom
 open Vdom
 
@@ -92,19 +92,19 @@ let apply_action model action _ ~schedule_action:_ =
 
 let on_startup ~schedule_action:_ _ = Async_kernel.return ()
 
-let delimiter t = Node.span [Attr.class_ "delimiter"] [Node.text t]
+let delimiter t = Node.span ~attr:(Attr.class_ "delimiter") [Node.text t]
 
-let literal t = Node.span [Attr.class_ "literal"] [Node.text t]
+let literal t = Node.span ~attr:(Attr.class_ "literal") [Node.text t]
 
 let unary_operator t =
-  Node.span [Attr.classes ["unary"; "operator"]] [Node.text t]
+  Node.span ~attr:(Attr.classes ["unary"; "operator"]) [Node.text t]
 
 let binary_operator t =
-  Node.span [Attr.classes ["binary"; "operator"]] [Node.text t]
+  Node.span ~attr:(Attr.classes ["binary"; "operator"]) [Node.text t]
 
 let in_parens param s =
   if param then
-    Node.span [Attr.class_ "parens"] [delimiter "("; s; delimiter ")"]
+    Node.span ~attr:(Attr.class_ "parens") [delimiter "("; s; delimiter ")"]
   else s
 
 let rec print_formula_html ?(param = false) f =
@@ -122,7 +122,7 @@ let rec print_formula_html ?(param = false) f =
         | Eventually -> "eventually"
       in
       in_parens param
-        (Node.span []
+        (Node.span
            [ unary_operator op_str
            ; Node.text " "
            ; print_formula_html f' ~param:true ] )
@@ -135,64 +135,68 @@ let rec print_formula_html ?(param = false) f =
         | Until -> "until"
       in
       in_parens param
-        (Node.span []
+        (Node.span
            [ print_formula_html f1 ~param:true
            ; Node.text " "
            ; binary_operator op_str
            ; Node.text " "
            ; print_formula_html f2 ~param:true ] )
 
-let view (m : Model.t) ~(inject : Action.t -> Vdom.Event.t) =
+let view (m : Model.t) ~inject =
   let open Vdom in
   let add_new_formula_button =
-    Node.div []
-      [Node.input [Attr.type_ "submit"; Attr.value "Add formula"] []]
+    Node.div
+      [ Node.input
+          ~attr:(Attr.many [Attr.type_ "submit"; Attr.value "Add formula"])
+          [] ]
   in
   let on_submit_formula =
-    Attr.on "submit" (fun _ev ->
-        Event.Many [Event.Prevent_default; inject Action.Add_formula] )
+    Attr.on_submit (fun _ev ->
+        Effect.Many [Effect.Prevent_default; inject Action.Add_formula] )
   in
   let pending_formula_input =
     Node.input
-      [ Attr.class_ "pending-formula"
-      ; Attr.value (Model.pending m)
-      ; Attr.on_input (fun _ formula ->
-            inject (Action.Set_pending {formula}) ) ]
+      ~attr:
+        (Attr.many
+           [ Attr.class_ "pending-formula"
+           ; Attr.value (Model.pending m)
+           ; Attr.on_input (fun _ formula ->
+                 inject (Action.Set_pending {formula}) ) ] )
       []
   in
   let messages =
-    Node.div [Attr.class_ "error"]
+    Node.div ~attr:(Attr.class_ "error")
       (match m.formula_error with Some msg -> [Node.text msg] | None -> [])
   in
   let add_new_form =
     Node.create "form"
-      [Attr.class_ "add-new"; on_submit_formula]
+      ~attr:(Attr.many [Attr.class_ "add-new"; on_submit_formula])
       [pending_formula_input; add_new_formula_button; messages]
   in
   let remove_formula_button txt ~index =
     let on_click _ev = inject (Action.Remove_formula {index}) in
-    Node.button [Attr.on_click on_click] [Node.text txt]
+    Node.button ~attr:(Attr.on_click on_click) [Node.text txt]
   in
   let formulas =
-    Node.table []
-      ( Node.tr [] [Node.th [] [Node.text "Formula"]; Node.th [] []]
+    Node.table
+      ( Node.tr [Node.th [Node.text "Formula"]; Node.th []]
       ::
       ( match m.formulas with
       | [] ->
-          [ Node.tr []
+          [ Node.tr
               [ Node.td
-                  [Attr.create "colspan" "2"]
-                  [ Node.p [Attr.class_ "missing"]
+                  ~attr:(Attr.create "colspan" "2")
+                  [ Node.p ~attr:(Attr.class_ "missing")
                       [Node.text "No formulas exist."] ] ] ]
       | _ ->
           List.mapi m.formulas ~f:(fun index formula ->
-              Node.tr []
-                [ Node.td [Attr.class_ "formula"]
-                    [Node.code [] [print_formula_html formula]]
-                ; Node.td [] [remove_formula_button "Remove" ~index] ] ) ) )
+              Node.tr
+                [ Node.td ~attr:(Attr.class_ "formula")
+                    [Node.code [print_formula_html formula]]
+                ; Node.td [remove_formula_button "Remove" ~index] ] ) ) )
   in
-  Node.body []
-    [ Node.h1 [] [Node.text "Linear Temporal Logic Visualizer"]
+  Node.body
+    [ Node.h1 [Node.text "Linear Temporal Logic Visualizer"]
     ; formulas
     ; add_new_form ]
 
