@@ -4,7 +4,10 @@ html {
     box-sizing: border-box;
 }
 html, body {
+    margin: 0;
+    padding: 0;
     font-size: 16px;
+    background: #eee;
 }
 table {
     width: 100%;
@@ -19,6 +22,23 @@ th {
 td {
     padding: .5rem;
 }
+
+.visualizer {
+}
+header, footer {
+    padding: 2rem;
+}
+header .title {
+    margin: 0;
+    font-size: 1.5rem;
+}
+main {
+    background: #fff;
+    padding: 3rem 2rem;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+}
+
 td.literal,
 td.formula {
     width: 90%;
@@ -40,9 +60,6 @@ td.formula {
 .add-new {
     display: flex;
     gap: .5rem;
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid #ccc;
     flex-wrap: wrap;
 }
 .add-new .error {

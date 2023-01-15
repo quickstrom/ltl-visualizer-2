@@ -284,10 +284,13 @@ let view (m : Model.t) ~inject =
     in
     Node.table (List.append atomics_rows formulas_rows)
   in
-  Node.body
-    [ Node.h1 [Node.text "Linear Temporal Logic Visualizer (v2)"]
-    ; atomics_and_formulas
-    ; add_new_form ]
+  Node.div
+    ~attr:(Attr.class_ "visualizer")
+    [ Node.header
+        [ Node.h1 ~attr:(Attr.class_ "title")
+            [Node.text "Linear Temporal Logic Visualizer (v2)"] ]
+    ; Node.main [atomics_and_formulas]
+    ; Node.footer [add_new_form] ]
 
 let create model ~old_model:_ ~inject =
   let open Incr.Let_syntax in
