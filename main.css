@@ -1,0 +1,123 @@
+html {
+    font-family: sans-serif;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    background: #eee;
+}
+table {
+    width: 100%;
+}
+th, td {
+    text-align: left;
+}
+th {
+    padding: .75rem .5rem .25rem;
+    border-bottom: 1px solid #ccc;
+}
+td {
+    padding: .5rem;
+}
+
+.visualizer {
+}
+header, footer {
+    padding: 2rem;
+}
+header .title {
+    margin: 0;
+    font-size: 1.5rem;
+}
+main {
+    background: #fff;
+    padding: 3rem 2rem;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+}
+
+td.literal,
+td.formula {
+    width: 90%;
+    font-size: 1rem;
+}
+.state {
+    width: 1%;
+    white-space: nowrap;
+    font-family: monospace;
+}
+.actions {
+    text-align: right;
+}
+
+.missing {
+    font-style: italic;
+}
+
+.add-new {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+.add-new .error {
+    flex: 1 0 100%;
+    padding: .5rem 0;
+    color: red;
+}
+.add-new input {
+    padding: .5rem;
+    font-size: 1rem;
+}
+.pending-formula {
+    flex: 1;
+}
+
+.formula {
+    font-family: monospace;
+}
+
+.literal {
+    color: purple;
+}
+.operator.binary {
+    font-weight: bold;
+}
+.delimiter {
+    color: #666;
+}
+
+
+.parens {
+    display: inline-block;
+    padding: 0 0 0 1rem;
+}
+.parens:before {
+    content: "";
+    display: inline-block;
+    margin-left: -1rem;
+}
+.subscript {
+    vertical-align: sub;
+    font-size: 75%;
+}
+
+.state input[type=checkbox] {
+    display: none;
+}
+.state input[type=checkbox]+label {
+    display: inline-block;
+    content: "";
+    width: 0.8em;
+    height: 0.8em;
+    border-radius: 100%;
+    border: 2px solid #000;
+    margin-right: 0.2em;
+    cursor: pointer;
+}
+
+.state input[type=checkbox]:checked+label {
+    background: #000;
+}
