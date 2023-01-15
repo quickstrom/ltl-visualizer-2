@@ -3,6 +3,7 @@
 pkgs.mkShell {
   OCAMLRUNPARAM = "b";
   buildInputs = with pkgs.ocamlPackages; [
+    pkgs.fswatch
     pkgs.ocaml
     pkgs.ocamlformat
     pkgs.opam

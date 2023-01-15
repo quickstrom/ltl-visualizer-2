@@ -155,6 +155,7 @@ let view (m : Model.t) ~inject =
         Effect.Many [Effect.Prevent_default; inject Action.Add_formula] )
   in
   let pending_formula_input =
+    (* TODO: Clear input field on input "submit" *)  
     Node.input
       ~attr:
         (Attr.many
