@@ -12,6 +12,9 @@ td {
     padding: .5rem;
 }
 
+.state {
+    width: 1%;
+}
 .missing {
     font-style: italic;
 }
@@ -59,4 +62,22 @@ td {
 .subscript {
     vertical-align: sub;
     font-size: 75%;
+}
+
+.state input[type=checkbox] {
+    display: none;
+}
+.state input[type=checkbox]+label {
+    display: inline-block;
+    content: "";
+    width: 0.8em;
+    height: 0.8em;
+    border-radius: 100%;
+    border: 2px solid #000;
+    margin-right: 0.2em;
+    cursor: pointer;
+}
+
+.state input[type=checkbox]:checked+label {
+        background: #000;
 }

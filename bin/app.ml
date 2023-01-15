@@ -50,6 +50,16 @@ module Model = struct
       formulas=
         (let before, after = List.split_n t.formulas (i + 1) in
          List.drop_last_exn before @ after ) }
+
+  let toggle_state_atomic index atom t =
+    { t with
+      trace=
+        List.mapi t.trace ~f:(fun i s ->
+            if i = index then
+              if Ltl.Trace.State.mem atom s then
+                Ltl.Trace.State.remove atom s
+              else Ltl.Trace.State.add atom s
+            else s ) }
 end
 
 (** The [Action] type represents transactions whose purpose is to update the
@@ -66,7 +76,7 @@ module Action = struct
     | Set_pending of {formula: string}
     | Remove_formula of {index: int}
     | Add_state
-    | Toggle_state_atomic of {index: int; name: char}
+    | Toggle_state_atomic of {index: int; atom: char}
   [@@deriving sexp]
 end
 
@@ -92,7 +102,8 @@ let apply_action model action _ ~schedule_action:_ =
       model |> Model.remove_formula index |> Model.clear_error
   (* TODO: implement *)
   | Action.Add_state -> model |> Model.add_state
-  | Action.Toggle_state_atomic _ -> model
+  | Action.Toggle_state_atomic {index; atom} ->
+      model |> Model.toggle_state_atomic index atom
 
 let on_startup ~schedule_action:_ _ = Async_kernel.return ()
 
@@ -111,7 +122,7 @@ let in_parens param s =
     Node.span ~attr:(Attr.class_ "parens") [delimiter "("; s; delimiter ")"]
   else s
 
-let all_atomic_names (m : Model.t) =
+let all_atoms (m : Model.t) =
   List.sort ~compare:Char.compare
     (Ltl.Formula.Names.elements
        (List.fold_left ~init:Ltl.Formula.Names.empty
@@ -156,10 +167,26 @@ let rec print_formula_html ?(param = false) f =
 let table_trace_headers (trace : Ltl.Trace.trace) =
   let last = List.length trace - 1 in
   List.mapi trace ~f:(fun i _ ->
-      Node.th
+      Node.th ~attr:(Attr.class_ "state")
         [ Node.text "S"
         ; Node.span ~attr:(Attr.class_ "subscript")
             [Node.text (Int.to_string i ^ if i = last then "..∞" else "")] ] )
+
+let table_trace_toggles ?(on_toggle = fun (_i : int) -> Effect.Ignore)
+    ~(id_prefix : string) (states : bool list) =
+  List.mapi states ~f:(fun i enabled ->
+      let id = id_prefix ^ Int.to_string i in
+      Node.th ~attr:(Attr.class_ "state")
+        [ Node.input
+            ~attr:
+              (Attr.many
+                 (List.append
+                    [ Attr.type_ "checkbox"
+                    ; Attr.id id
+                    ; Attr.on_change (fun _ _ -> on_toggle i) ]
+                    (if enabled then [Attr.checked] else []) ) )
+            []
+        ; Node.label ~attr:(Attr.for_ id) [] ] )
 
 let view (m : Model.t) ~inject =
   let open Vdom in
@@ -197,34 +224,42 @@ let view (m : Model.t) ~inject =
     let on_click _ev = inject (Action.Remove_formula {index}) in
     Node.button ~attr:(Attr.on_click on_click) [Node.text txt]
   in
-  let atomics =
-    Node.table
-      ( Node.tr
-          ( Node.th [Node.text "Atom"]
-          :: List.append
-               (table_trace_headers m.trace)
-               [ Node.th
-                   [ Node.button
-                       ~attr:
-                         (Attr.on_click (fun _ -> inject Action.Add_state))
-                       [Node.text "+"] ] ] )
+  let atomics_and_formulas =
+    let atomics_rows =
+      Node.tr
+        ( Node.th [Node.text "Atom"]
+        :: List.append
+             (table_trace_headers m.trace)
+             [ Node.th
+                 [ Node.button
+                     ~attr:(Attr.on_click (fun _ -> inject Action.Add_state))
+                     [Node.text "+"] ] ] )
       ::
-      ( match all_atomic_names m with
+      ( match all_atoms m with
       | [] ->
           [ Node.tr
               [ Node.td
                   ~attr:(Attr.create "colspan" "2")
                   [ Node.p ~attr:(Attr.class_ "missing")
                       [Node.text "No atomics are used."] ] ] ]
-      | names ->
-          List.map names ~f:(fun name ->
+      | atoms ->
+          List.map atoms ~f:(fun atom ->
               Node.tr
-                [ Node.td ~attr:(Attr.class_ "literal")
-                    [Node.code [Node.text (String.of_char name)]] ] ) ) )
-  in
-  let formulas =
-    Node.table
-      ( Node.tr [Node.th [Node.text "Formula"]; Node.th []]
+                ( Node.td ~attr:(Attr.class_ "literal")
+                    [Node.code [Node.text (String.of_char atom)]]
+                :: List.append
+                     (table_trace_toggles
+                        ~on_toggle:(fun index ->
+                          inject (Action.Toggle_state_atomic {index; atom})
+                          )
+                        ~id_prefix:(String.of_char atom)
+                        (List.map m.trace ~f:(Ltl.Trace.State.mem atom)) )
+                     [] ) ) )
+    in
+    let formulas_rows =
+      Node.tr
+        ( Node.th [Node.text "Formula"]
+        :: List.append (table_trace_headers m.trace) [Node.th []] )
       ::
       ( match m.formulas with
       | [] ->
@@ -238,12 +273,13 @@ let view (m : Model.t) ~inject =
               Node.tr
                 [ Node.td ~attr:(Attr.class_ "formula")
                     [Node.code [print_formula_html formula]]
-                ; Node.td [remove_formula_button "Remove" ~index] ] ) ) )
+                ; Node.td [remove_formula_button "Remove" ~index] ] ) )
+    in
+    Node.table (List.append atomics_rows formulas_rows)
   in
   Node.body
     [ Node.h1 [Node.text "Linear Temporal Logic Visualizer"]
-    ; atomics
-    ; formulas
+    ; atomics_and_formulas
     ; add_new_form ]
 
 let create model ~old_model:_ ~inject =
