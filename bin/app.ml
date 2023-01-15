@@ -108,7 +108,7 @@ let in_parens param s =
   else s
 
 let all_atomic_names (m : Model.t) =
-  List.sort
+  List.sort ~compare:Char.compare
     (Ltl.Formula.Names.elements
        (List.fold_left ~init:Ltl.Formula.Names.empty
           ~f:Ltl.Formula.Names.union
