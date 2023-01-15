@@ -28,3 +28,17 @@ module Syntax = struct
 
   let until p q = Bin_op (Until, p, q)
 end
+
+module Names = struct
+  include Set.Make (Char)
+end
+
+let atomic_names : formula -> Names.t =
+  let rec go acc = function
+    | Top -> acc
+    | Bottom -> acc
+    | Atomic c -> Names.add c acc
+    | Un_op (_, sub) -> go acc sub
+    | Bin_op (_, lhs, rhs) -> go (go acc lhs) rhs
+  in
+  go Names.empty

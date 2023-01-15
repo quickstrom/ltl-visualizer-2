@@ -107,6 +107,13 @@ let in_parens param s =
     Node.span ~attr:(Attr.class_ "parens") [delimiter "("; s; delimiter ")"]
   else s
 
+let all_atomic_names (m : Model.t) =
+  List.sort
+    (Ltl.Formula.Names.elements
+       (List.fold_left ~init:Ltl.Formula.Names.empty
+          ~f:Ltl.Formula.Names.union
+          (List.map ~f:Ltl.Formula.atomic_names m.formulas) ) )
+
 let rec print_formula_html ?(param = false) f =
   let open Ltl.Formula in
   match f with
@@ -155,7 +162,7 @@ let view (m : Model.t) ~inject =
         Effect.Many [Effect.Prevent_default; inject Action.Add_formula] )
   in
   let pending_formula_input =
-    (* TODO: Clear input field on input "submit" *)  
+    (* TODO: Clear input field on input "submit" *)
     Node.input
       ~attr:
         (Attr.many
@@ -178,6 +185,23 @@ let view (m : Model.t) ~inject =
     let on_click _ev = inject (Action.Remove_formula {index}) in
     Node.button ~attr:(Attr.on_click on_click) [Node.text txt]
   in
+  let atomics =
+    Node.table
+      ( Node.tr [Node.th [Node.text "Atomic"]; Node.th []]
+      ::
+      ( match all_atomic_names m with
+      | [] ->
+          [ Node.tr
+              [ Node.td
+                  ~attr:(Attr.create "colspan" "2")
+                  [ Node.p ~attr:(Attr.class_ "missing")
+                      [Node.text "No atomics are used."] ] ] ]
+      | names ->
+          List.map names ~f:(fun name ->
+              Node.tr
+                [ Node.td ~attr:(Attr.class_ "literal")
+                    [Node.code [Node.text (String.of_char name)]] ] ) ) )
+  in
   let formulas =
     Node.table
       ( Node.tr [Node.th [Node.text "Formula"]; Node.th []]
@@ -198,6 +222,7 @@ let view (m : Model.t) ~inject =
   in
   Node.body
     [ Node.h1 [Node.text "Linear Temporal Logic Visualizer"]
+    ; atomics
     ; formulas
     ; add_new_form ]
 
