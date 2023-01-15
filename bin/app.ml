@@ -187,7 +187,7 @@ let view (m : Model.t) ~inject =
   in
   let atomics =
     Node.table
-      ( Node.tr [Node.th [Node.text "Atomic"]; Node.th []]
+      ( Node.tr [Node.th [Node.text "Atom"]; Node.th []]
       ::
       ( match all_atomic_names m with
       | [] ->
