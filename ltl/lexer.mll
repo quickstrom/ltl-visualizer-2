@@ -4,7 +4,7 @@ open Error
 }
 
 let atomic = ['A'-'Z']
-let ident = ['a'-'z' '&' '|' '-' '>' '<']+
+let ident = ['a'-'z' '&' '|' '=' '>' '<']+
 let whitespace = [' ' '\t' '\n']
 
 rule f = parse

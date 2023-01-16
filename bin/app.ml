@@ -153,7 +153,7 @@ let rec print_formula_html ?(param = false) f =
         match op with
         | And -> "&&"
         | Or -> "||"
-        | Implies -> "->"
+        | Implies -> "=>"
         | Until -> "until"
       in
       in_parens param

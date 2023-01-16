@@ -35,7 +35,7 @@ expr :
         let op = match i with
           | "&&" -> Formula.And
           | "||" -> Formula.Or
-          | "->" -> Formula.Implies
+          | "=>" -> Formula.Implies
           | "until" -> Formula.Until
           | _ -> raise (SyntaxError ("Invalid binary operator: " ^ i))
         in Formula.Bin_op (op, e1, e2)

@@ -41,11 +41,11 @@ Operators are of two kinds:
 * Binary operators (infix):
   - `&&`
   - `||`
-  - `->` (implication)
+  - `=>` (implication)
   - `until`
   
-All binary operators are right-associative. For example, `X until Y ->
-next Z` is parsed as `X until (Y -> (next Z))`.
+All binary operators are right-associative. For example, `X until Y =>
+next Z` is parsed as `X until (Y => (next Z))`.
 
 Here are some examples:
 
@@ -53,7 +53,7 @@ Here are some examples:
 next A 
 A || B
 C && D
-A -> eventually B
+A => eventually B
 always next C
 A until B && eventually C
 eventually always D

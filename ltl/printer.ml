@@ -18,7 +18,7 @@ let rec print_formula ?(param = false) f =
         match op with
         | Formula.And -> "&&"
         | Formula.Or -> "||"
-        | Formula.Implies -> "->"
+        | Formula.Implies -> "=>"
         | Formula.Until -> "until"
       in
       in_parens
